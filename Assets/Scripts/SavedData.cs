@@ -7,129 +7,71 @@ using UnityEngine;
 public class SavedData : MonoBehaviour
 {
     public static SavedData Instance;
-
-    public string BestPlayerName = "NoName";
+    public string CurrentPlayerName;
+    public string BestScorePlayerName;
     public int BestScore = 0;
 
-    public string playerName;
 
+    public bool CheckBestScore(int score)
+    {
+        if (score < BestScore) return false;
+
+        BestScorePlayerName = CurrentPlayerName;
+        BestScore = score;
+
+        SaveBestScoreData();
+
+        return true;
+    }
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            LoadBestScore();
-            LoadHighScore();
-        }
-        else
+        if (Instance != null)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        LoadBestScoreData();
     }
 
     [System.Serializable]
     class SaveData
     {
-        public string bestPlayerName;
-        public int besetScore;
+        public string Name;
+        public int Score;
     }
 
-    public static void SaveBestScore()
+    public void SaveBestScoreData()
     {
-        var data = new SaveData()
-        {
-            besetScore = Instance.BestScore,
-            bestPlayerName = Instance.BestPlayerName,
-        };
+        SaveData data = new SaveData();
+        data.Name = BestScorePlayerName;
+        data.Score = BestScore;
+
         string json = JsonUtility.ToJson(data);
-        File.WriteAllText(Application.persistentDataPath + "/bestScore.json", json);
-    }
 
-    public void LoadBestScore()
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+
+    }
+    public void LoadBestScoreData()
     {
-        var path = Application.persistentDataPath + "/bestScore.json";
+        string path = Application.persistentDataPath + "/savefile.json";
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            var data = JsonUtility.FromJson<SaveData>(json);
-            BestPlayerName = data.bestPlayerName;
-            BestScore = data.besetScore;
-        }
-    }
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
 
-    [System.Serializable]
-    public class HighScoreData
-    {
-        public string playerName;
-        public int score;
-        public string date;
-
-        public override string ToString()
-        {
-            return $"{playerName} : {score} : {date}";
-        }
-    }
-
-    [Serializable] public struct HighScoreDataWrapper { public HighScoreData[] highScoreArray; }
-    HighScoreDataWrapper highScoreData;
-
-    public HighScoreData[] HighScoreArray
-    {
-        get { return highScoreData.highScoreArray; }
-
-    }
-
-    //public HighScoreData[] highScoreArray;
-    public int maxHighScoreEntry = 11;
-
-    public static void EvaluateScore(int score)
-    {
-        if (score <= 0) return;
-
-        var data = Instance.HighScoreArray;
-        int i = Instance.maxHighScoreEntry - 1;
-        while (i > 0)
-        {
-            if (data[i - 1].score >= score) break;
-            data[i] = data[i - 1];
-            i--;
-        }
-        if (data[i].score <= score)
-            data[i] = new HighScoreData
-            {
-                playerName = Instance.playerName,
-                score = score,
-                date = DateTime.Now.ToString("dd/MM/yyyy")
-            };
-
-        SaveHighScore();
-    }
-
-    public static void SaveHighScore()
-    {
-        string json = JsonUtility.ToJson(Instance.highScoreData);
-        File.WriteAllText(Application.persistentDataPath + "/highScore.json", json);
-    }
-
-    public void LoadHighScore()
-    {
-        var path = Application.persistentDataPath + "/highScore.json";
-        if (File.Exists(path))
-        {
-            string json = File.ReadAllText(path);
-            highScoreData = JsonUtility.FromJson<HighScoreDataWrapper>(json);
+            BestScorePlayerName = data.Name;
+            BestScore = data.Score;
         }
         else
         {
-            highScoreData.highScoreArray = new HighScoreData[maxHighScoreEntry];
-            for (int i = 0; i < maxHighScoreEntry; i++)
-            {
-                highScoreData.highScoreArray[i] = new HighScoreData();
-            }
+            BestScorePlayerName = "";
+            BestScore = 0;
         }
     }
-
 
 }

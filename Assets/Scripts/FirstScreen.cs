@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -10,25 +11,27 @@ using UnityEditor;
 
 public class FirstScreen : MonoBehaviour
 {
-    public InputField playerInput;
+    public Text BestScoreText;
+    public TMP_InputField PlayerNameInput;
     public GameObject errorMessage;
 
+    private void Start()
+    {
+        SavedData.Instance.LoadBestScoreData();
+
+        BestScoreText.text = $"Best Score : {SavedData.Instance.BestScorePlayerName} : {SavedData.Instance.BestScore}";
+    }
     public void StartNew()
     {
-        string playerName = "NoName";
-        if (!playerInput.text.Equals("Enter your name..."))
-        {
-            //validate data
-            if (ValidName(playerInput.text))
-                playerName = playerInput.text;
-            else
-            {
-                errorMessage.SetActive(true);
-                return;
-            }
-        }
-        SavedData.Instance.playerName = playerName;
         SceneManager.LoadScene(1);
+    }
+
+    public void OnNameChanged()
+    {
+        if (SavedData.Instance != null)
+        {
+            SavedData.Instance.CurrentPlayerName = PlayerNameInput.text;
+        }
     }
 
     public void Exit()
