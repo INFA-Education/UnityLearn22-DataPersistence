@@ -13,7 +13,6 @@ public class FirstScreen : MonoBehaviour
 {
     public Text BestScoreText;
     public TMP_InputField PlayerNameInput;
-    public GameObject errorMessage;
 
     private void Start()
     {

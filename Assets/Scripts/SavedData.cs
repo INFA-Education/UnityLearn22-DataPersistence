@@ -59,6 +59,7 @@ public class SavedData : MonoBehaviour
     public void LoadBestScoreData()
     {
         string path = Application.persistentDataPath + "/savefile.json";
+        //Debug.Log(path); //если хочется узнать где этот файл находится
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
